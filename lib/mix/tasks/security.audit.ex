@@ -7,10 +7,7 @@ defmodule Mix.Tasks.Security.Audit do
   @shortdoc "Audit dependencies for known security vulnerabilities."
 
   def run(_) do
-    Application.ensure_all_started(:elixir_security_advisory_client)
-
-    dependency_versions()
-    |> audit
+    audit(dependency_versions())
   end
 
   defp audit([]) do
@@ -20,9 +17,16 @@ defmodule Mix.Tasks.Security.Audit do
   defp audit(dependencies) when is_list(dependencies) do
     client = Client.create()
 
-    %{"data" => packages} = Client.request(client, VulnerablePackages.query(dependencies))
-
-    packages
+    dependencies
+    |> Enum.chunk_every(10)
+    |> Enum.map(fn chunk ->
+      Task.async(fn ->
+        %{data: packages} = Client.request(client, VulnerablePackages.query(chunk))
+        Enum.to_list(packages)
+      end)
+    end)
+    |> Enum.map(&Task.await/1)
+    |> List.flatten()
     |> Enum.map(fn
       {_dependency, %{"edges" => []}} -> nil
       {dependency, %{"edges" => [%{"node" => node}]}} -> {dependency, node}

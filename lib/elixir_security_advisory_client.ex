@@ -1,14 +1,12 @@
 defmodule ElixirSecurityAdvisoryClient do
   @moduledoc false
 
-  alias HTTPoison.Response
-
   @opaque t :: %__MODULE__{base_url: String.t()}
 
   @enforce_keys [:base_url]
   defstruct @enforce_keys
 
-  @default_base_url "https://elixir-security-advisory.gigalixirapp.com/v1/graphiql"
+  @default_base_url "https://elixir-security-advisory.gigalixirapp.com/v1/graphql"
 
   def create do
     case System.get_env("ELIIR_SECURITY_ADVISORY_API_BASE_URL") do
@@ -17,20 +15,19 @@ defmodule ElixirSecurityAdvisoryClient do
     end
   end
 
-  def request(%__MODULE__{base_url: base_url}, query, variables \\ %{}) do
-    %Response{status_code: 200, body: body} =
-      HTTPoison.post!(
-        base_url,
-        Jason.encode!(%{
-          query: query,
-          variables: variables
-        }),
-        [
-          {"Content-Type", "application/json"},
-          {"Accept", "application/json"}
-        ]
+  def request(%__MODULE__{base_url: base_url}, query) do
+    :inets.start()
+    :ssl.start()
+
+    {:ok, {_, _, body}} =
+      :httpc.request(
+        :get,
+        {to_charlist(base_url <> "?" <> URI.encode_query(%{query: query})),
+         [{'accept', 'apllication/ets'}]},
+        [],
+        body_format: :binary
       )
 
-    Jason.decode!(body)
+    :erlang.binary_to_term(body)
   end
 end
