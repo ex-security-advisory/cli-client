@@ -1,5 +1,8 @@
 # ElixirSecurityAdvisoryClient
 
+[![Build Status](https://travis-ci.com/ex-security-advisory/cli-client.svg?branch=master)](https://travis-ci.com/ex-security-advisory/cli-client)
+[![Coverage Status](https://coveralls.io/repos/github/ex-security-advisory/cli-client/badge.svg?branch=master)](https://coveralls.io/github/ex-security-advisory/cli-client?branch=master)
+
 **TODO: Add description**
 
 ## Installation
@@ -18,4 +21,3 @@ end
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/elixir_security_advisory_client](https://hexdocs.pm/elixir_security_advisory_client).
-

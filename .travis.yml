@@ -1,0 +1,35 @@
+language: elixir
+sudo: false
+elixir:
+  - 1.7
+otp_release:
+  - 21.0
+cache:
+  directories:
+    - ~/.mix
+    - ~/.hex
+    - _build/*/*.plt
+    - _build/*/*.plt.hash
+jobs:
+  include:
+    - stage: test
+      env:
+        - MIX_ENV=test
+      script: mix coveralls.travis
+      elixir: 1.7
+    - stage: format
+      env:
+        - MIX_ENV=dev
+      script: mix format --check-formatted
+      elixir: 1.7
+    - stage: credo
+      env:
+        - MIX_ENV=dev
+      script: mix credo --strict
+      elixir: 1.7
+    - stage: dialyzer
+      env:
+        - MIX_ENV=dev
+      before_script: travis_wait mix dialyzer --plt
+      script: mix dialyzer --halt-exit-status
+      elixir: 1.7

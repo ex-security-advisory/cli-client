@@ -1,17 +1,23 @@
 defmodule Mix.Tasks.Security.Audit do
+  @moduledoc """
+  Search for known security vulnerabilities in the `mix.lock`.
+  """
+
+  @shortdoc "Audit dependencies for known security vulnerabilities."
+
   use Mix.Task
 
   alias ElixirSecurityAdvisoryClient, as: Client
   alias ElixirSecurityAdvisoryClient.Query.VulnerablePackages
 
-  @shortdoc "Audit dependencies for known security vulnerabilities."
+  alias Mix.Dep.Lock
 
   def run(_) do
     audit(dependency_versions())
   end
 
   defp audit([]) do
-    IO.puts("No dependencies found")
+    Mix.Shell.IO.error("No dependencies found")
   end
 
   defp audit(dependencies) when is_list(dependencies) do
@@ -34,20 +40,15 @@ defmodule Mix.Tasks.Security.Audit do
     |> Enum.reject(&is_nil/1)
     |> case do
       [] ->
-        IO.puts("#{IO.ANSI.green()}No vulnerabilities found#{IO.ANSI.reset()}")
+        Mix.Shell.IO.info("No vulnerabilities found")
 
       other ->
-        IO.puts("#{IO.ANSI.red()}Vulnerabilities found:#{IO.ANSI.reset()}")
-        IO.puts("")
+        Mix.Shell.IO.error("Vulnerabilities found:")
 
         for {dependency, %{"title" => title, "description" => description}} <- other do
-          put_title(dependency, title)
+          IO.ANSI.Docs.print_heading("#{dependency} – #{title}", width: width())
 
-          IO.puts("""
-
-          #{description}
-
-          """)
+          IO.ANSI.Docs.print(description, width: width())
         end
 
         System.halt(1)
@@ -55,32 +56,20 @@ defmodule Mix.Tasks.Security.Audit do
   end
 
   defp dependency_versions do
-    Mix.Dep.Lock.read()
+    Lock.read()
     |> Enum.map(fn
       {_, {:hex, dep_name, version, _, _, _, _}} ->
         {dep_name, version}
 
       {dep_name, _} ->
-        IO.puts(
-          "#{IO.ANSI.yellow()}Skipping #{dep_name} because it is not installed via hex#{
-            IO.ANSI.reset()
-          }"
-        )
+        Mix.Shell.IO.error("Skipping #{dep_name} because it is not installed via hex")
 
         nil
     end)
     |> Enum.reject(&is_nil/1)
   end
 
-  defp put_title(dependency, title) do
-    heading = "#{dependency} – #{title}"
-    padding = div(width() + String.length(heading), 2)
-    heading = heading |> String.pad_leading(padding) |> String.pad_trailing(width())
-
-    IO.puts(IO.ANSI.reverse() <> IO.ANSI.yellow() <> heading <> IO.ANSI.reset())
-  end
-
-  defp width() do
+  defp width do
     case :io.columns() do
       {:ok, width} -> min(width, 80)
       {:error, _} -> 80
