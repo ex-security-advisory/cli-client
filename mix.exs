@@ -7,8 +7,14 @@ defmodule ElixirSecurityAdvisoryClient.MixProject do
       version: "0.1.0",
       elixir: "~> 1.7",
       start_permanent: Mix.env() == :prod,
-      # No Deps to ensure archive compatibility!
-      deps: []
+      deps: deps(),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ]
     ]
   end
 
@@ -16,6 +22,15 @@ defmodule ElixirSecurityAdvisoryClient.MixProject do
   def application do
     [
       extra_applications: [:mix, :ssl, :inets]
+    ]
+  end
+
+  # No Runtime Deps to ensure archive compatibility!
+  def deps do
+    [
+      {:dialyxir, "~> 1.0-rc", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:excoveralls, "~> 0.10", only: :test, runtime: false}
     ]
   end
 end
