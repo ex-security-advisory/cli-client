@@ -1,0 +1,3 @@
+%{
+  "contab": {:git, "https://github.com/jshmrtn/crontab.git", "e22989d0e994cc4ad360519098b74c8b384f03e0", []},
+}
