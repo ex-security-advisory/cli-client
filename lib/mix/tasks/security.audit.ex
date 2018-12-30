@@ -34,20 +34,23 @@ defmodule Mix.Tasks.Security.Audit do
     |> Enum.reject(&is_nil/1)
     |> case do
       [] ->
-        IO.puts("No vulnerabilities found")
+        IO.puts("#{IO.ANSI.green()}No vulnerabilities found#{IO.ANSI.reset()}")
 
       other ->
-        IO.puts("Vulnerabilities found:")
+        IO.puts("#{IO.ANSI.red()}Vulnerabilities found:#{IO.ANSI.reset()}")
         IO.puts("")
 
-        for {dependency, %{"id" => id, "title" => title, "description" => description}} <- other do
+        for {dependency, %{"title" => title, "description" => description}} <- other do
+          put_title(dependency, title)
+
           IO.puts("""
-          #{dependency} – #{title} (#{id}):
 
           #{description}
 
           """)
         end
+
+        System.halt(1)
     end
   end
 
@@ -58,9 +61,29 @@ defmodule Mix.Tasks.Security.Audit do
         {dep_name, version}
 
       {dep_name, _} ->
-        IO.puts("Skipping #{dep_name} because it is not installed via hex")
+        IO.puts(
+          "#{IO.ANSI.yellow()}Skipping #{dep_name} because it is not installed via hex#{
+            IO.ANSI.reset()
+          }"
+        )
+
         nil
     end)
     |> Enum.reject(&is_nil/1)
+  end
+
+  defp put_title(dependency, title) do
+    heading = "#{dependency} – #{title}"
+    padding = div(width() + String.length(heading), 2)
+    heading = heading |> String.pad_leading(padding) |> String.pad_trailing(width())
+
+    IO.puts(IO.ANSI.reverse() <> IO.ANSI.yellow() <> heading <> IO.ANSI.reset())
+  end
+
+  defp width() do
+    case :io.columns() do
+      {:ok, width} -> min(width, 80)
+      {:error, _} -> 80
+    end
   end
 end

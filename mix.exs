@@ -15,7 +15,7 @@ defmodule ElixirSecurityAdvisoryClient.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:mix, :httpc, :ssl, :inets]
+      extra_applications: [:mix, :ssl, :inets]
     ]
   end
 end
