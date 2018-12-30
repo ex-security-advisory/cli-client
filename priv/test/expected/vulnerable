@@ -1,0 +1,9 @@
+Vulnerabilities found:
+[0m
+[7m[33m                            xain – XSS Vulnerability                            [0m
+[0m
+XSS is possible via the use of the order query parameter. An example request
+would look like:
+[0m
+[36m    http://host/ressources?order=%27><script>alert(1);</script>[0m
+[0m

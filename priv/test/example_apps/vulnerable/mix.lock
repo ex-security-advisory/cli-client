@@ -1,0 +1,3 @@
+%{
+  "xain": {:hex, :xain, "0.6.1", "46af90d3c7055d8c35ac1983040236efdaeed786c99fc61834bc987bbc7e35aa", [:mix], [], "hexpm"},
+}
